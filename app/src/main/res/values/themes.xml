@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Thème Android minimal : Compose gère l'apparence réelle de l'interface
+         via MonProfDePocheTheme. Ce thème sert uniquement à la fenêtre
+         avant que Compose ne s'affiche (démarrage de l'application). -->
+    <style name="Theme.MonProfDePoche" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

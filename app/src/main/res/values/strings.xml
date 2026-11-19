@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mon Prof de Poche</string>
+    <string name="home_tagline">Enregistrez vos cours, structurez-les et révisez-les avec un tuteur IA.</string>
+    <string name="home_phase_note">Phase 1 · squelette de l\'application</string>
+</resources>
