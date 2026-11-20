@@ -1,24 +1,25 @@
 package app.monprofdepoche
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import app.monprofdepoche.ui.home.HomeScreen
-import app.monprofdepoche.ui.theme.MonProfDePocheTheme
 
 /**
- * Unique activité de l'application pour l'instant : elle affiche
- * l'interface Compose et applique le thème Material 3.
+ * Unique activité de l'application : elle installe l'interface Compose et
+ * force des barres système claires sur fond sombre.
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+        )
         setContent {
-            MonProfDePocheTheme {
-                HomeScreen()
-            }
+            MonProfApp()
         }
     }
 }

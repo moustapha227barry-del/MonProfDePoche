@@ -2,54 +2,36 @@ package app.monprofdepoche.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Palette claire : bleu « étude » et touches ambre.
-internal val PrimaryLight = Color(0xFF1E3A8A)
-internal val OnPrimaryLight = Color(0xFFFFFFFF)
-internal val PrimaryContainerLight = Color(0xFFDBE3FF)
-internal val OnPrimaryContainerLight = Color(0xFF001A44)
+// ---------------------------------------------------------------------------
+// Palette « Mon Prof de Poche » : nuit profonde, violets lumineux,
+// bleus électriques et verts de progression.
+// ---------------------------------------------------------------------------
 
-internal val SecondaryLight = Color(0xFF4C5F7D)
-internal val OnSecondaryLight = Color(0xFFFFFFFF)
-internal val SecondaryContainerLight = Color(0xFFD5E3FF)
-internal val OnSecondaryContainerLight = Color(0xFF081C36)
+// Fonds et surfaces
+val Ink = Color(0xFF08080F)
+val InkElevated = Color(0xFF10101A)
+val SurfaceCard = Color(0xFF151522)
+val SurfaceCardHigh = Color(0xFF1B1B2B)
+val CardBorder = Color(0xFF262638)
 
-internal val TertiaryLight = Color(0xFF7A5900)
-internal val OnTertiaryLight = Color(0xFFFFFFFF)
-internal val TertiaryContainerLight = Color(0xFFFFDF9B)
-internal val OnTertiaryContainerLight = Color(0xFF261900)
+// Accents
+val Violet = Color(0xFF8B5CF6)
+val VioletSoft = Color(0xFFA78BFA)
+val VioletDeep = Color(0xFF6D28D9)
+val Blue = Color(0xFF3B82F6)
+val BlueSoft = Color(0xFF60A5FA)
+val BlueDeep = Color(0xFF1D4ED8)
+val Green = Color(0xFF34D399)
+val GreenSoft = Color(0xFF6EE7B7)
+val Amber = Color(0xFFFBBF24)
+val Coral = Color(0xFFF87171)
 
-internal val BackgroundLight = Color(0xFFFAF9FD)
-internal val OnBackgroundLight = Color(0xFF1A1B20)
-internal val SurfaceLight = Color(0xFFFAF9FD)
-internal val OnSurfaceLight = Color(0xFF1A1B20)
-internal val SurfaceVariantLight = Color(0xFFE1E2EC)
-internal val OnSurfaceVariantLight = Color(0xFF44464F)
-internal val OutlineLight = Color(0xFF757780)
-internal val ErrorLight = Color(0xFFBA1A1A)
-internal val OnErrorLight = Color(0xFFFFFFFF)
+// Textes
+val TextPrimary = Color(0xFFF4F2FF)
+val TextSecondary = Color(0xFFA6A3BD)
+val TextMuted = Color(0xFF6F6C87)
 
-// Palette sombre : mêmes teintes, inversées pour rester lisibles.
-internal val PrimaryDark = Color(0xFFB3C5FF)
-internal val OnPrimaryDark = Color(0xFF002E6B)
-internal val PrimaryContainerDark = Color(0xFF0B2C6B)
-internal val OnPrimaryContainerDark = Color(0xFFDBE3FF)
-
-internal val SecondaryDark = Color(0xFFB4C7E7)
-internal val OnSecondaryDark = Color(0xFF1E314B)
-internal val SecondaryContainerDark = Color(0xFF344863)
-internal val OnSecondaryContainerDark = Color(0xFFD5E3FF)
-
-internal val TertiaryDark = Color(0xFFF5BF48)
-internal val OnTertiaryDark = Color(0xFF402D00)
-internal val TertiaryContainerDark = Color(0xFF5C4300)
-internal val OnTertiaryContainerDark = Color(0xFFFFDF9B)
-
-internal val BackgroundDark = Color(0xFF121318)
-internal val OnBackgroundDark = Color(0xFFE3E2E8)
-internal val SurfaceDark = Color(0xFF121318)
-internal val OnSurfaceDark = Color(0xFFE3E2E8)
-internal val SurfaceVariantDark = Color(0xFF44464F)
-internal val OnSurfaceVariantDark = Color(0xFFC5C6D0)
-internal val OutlineDark = Color(0xFF8F9099)
-internal val ErrorDark = Color(0xFFFFB4AB)
-internal val OnErrorDark = Color(0xFF690005)
+// Dégradés de marque
+val BrandGradient = listOf(VioletDeep, Violet, Blue)
+val RecordGradient = listOf(Violet, Blue)
+val SuccessGradient = listOf(GreenSoft, Green)

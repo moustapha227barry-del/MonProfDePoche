@@ -1,88 +1,58 @@
 package app.monprofdepoche.ui.theme
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 
-private val LightColorScheme = lightColorScheme(
-    primary = PrimaryLight,
-    onPrimary = OnPrimaryLight,
-    primaryContainer = PrimaryContainerLight,
-    onPrimaryContainer = OnPrimaryContainerLight,
-    secondary = SecondaryLight,
-    onSecondary = OnSecondaryLight,
-    secondaryContainer = SecondaryContainerLight,
-    onSecondaryContainer = OnSecondaryContainerLight,
-    tertiary = TertiaryLight,
-    onTertiary = OnTertiaryLight,
-    tertiaryContainer = TertiaryContainerLight,
-    onTertiaryContainer = OnTertiaryContainerLight,
-    background = BackgroundLight,
-    onBackground = OnBackgroundLight,
-    surface = SurfaceLight,
-    onSurface = OnSurfaceLight,
-    surfaceVariant = SurfaceVariantLight,
-    onSurfaceVariant = OnSurfaceVariantLight,
-    outline = OutlineLight,
-    error = ErrorLight,
-    onError = OnErrorLight,
+private val MonProfColorScheme = darkColorScheme(
+    primary = Violet,
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFF2A1E52),
+    onPrimaryContainer = Color(0xFFEDE9FE),
+    secondary = Blue,
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFF172554),
+    onSecondaryContainer = Color(0xFFDBEAFE),
+    tertiary = Green,
+    onTertiary = Color(0xFF052E1F),
+    tertiaryContainer = Color(0xFF103B2C),
+    onTertiaryContainer = Color(0xFFD1FAE5),
+    background = Ink,
+    onBackground = TextPrimary,
+    surface = SurfaceCard,
+    onSurface = TextPrimary,
+    surfaceVariant = SurfaceCardHigh,
+    onSurfaceVariant = TextSecondary,
+    outline = CardBorder,
+    outlineVariant = SurfaceCardHigh,
+    error = Coral,
+    onError = Color(0xFF2B0A0A),
+    scrim = Color(0xCC000000),
 )
 
-private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryDark,
-    onPrimary = OnPrimaryDark,
-    primaryContainer = PrimaryContainerDark,
-    onPrimaryContainer = OnPrimaryContainerDark,
-    secondary = SecondaryDark,
-    onSecondary = OnSecondaryDark,
-    secondaryContainer = SecondaryContainerDark,
-    onSecondaryContainer = OnSecondaryContainerDark,
-    tertiary = TertiaryDark,
-    onTertiary = OnTertiaryDark,
-    tertiaryContainer = TertiaryContainerDark,
-    onTertiaryContainer = OnTertiaryContainerDark,
-    background = BackgroundDark,
-    onBackground = OnBackgroundDark,
-    surface = SurfaceDark,
-    onSurface = OnSurfaceDark,
-    surfaceVariant = SurfaceVariantDark,
-    onSurfaceVariant = OnSurfaceVariantDark,
-    outline = OutlineDark,
-    error = ErrorDark,
-    onError = OnErrorDark,
+private val MonProfShapes = Shapes(
+    extraSmall = RoundedCornerShape(10.dp),
+    small = RoundedCornerShape(14.dp),
+    medium = RoundedCornerShape(20.dp),
+    large = RoundedCornerShape(26.dp),
+    extraLarge = RoundedCornerShape(32.dp),
 )
 
 /**
- * Thème Material 3 de l'application.
- *
- * @param darkTheme suit le réglage clair/sombre du téléphone par défaut.
- * @param dynamicColor sur Android 12+, reprend les couleurs du fond d'écran.
+ * Thème unique de l'application : identité sombre imposée, quel que soit le
+ * réglage clair/sombre du téléphone. C'est un choix de direction artistique,
+ * pas un oubli.
  */
 @Composable
-fun MonProfDePocheTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
-    content: @Composable () -> Unit,
-) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
+fun MonProfDePocheTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = MonProfColorScheme,
         typography = Typography,
+        shapes = MonProfShapes,
         content = content,
     )
 }

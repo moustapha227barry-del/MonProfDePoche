@@ -1,6 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Mon Prof de Poche</string>
-    <string name="home_tagline">Enregistrez vos cours, structurez-les et révisez-les avec un tuteur IA.</string>
-    <string name="home_phase_note">Phase 1 · squelette de l\'application</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Accueil</string>
+    <string name="nav_basket">Panier</string>
+    <string name="nav_courses">Cours</string>
+    <string name="nav_tutor">Tuteur</string>
+    <string name="nav_progress">Progrès</string>
+    <string name="action_back">Retour</string>
+
+    <!-- Accueil -->
+    <string name="greeting">Bonjour 👋</string>
+    <string name="greeting_title">Prêt à réviser ?</string>
+    <string name="streak_days">%1$d j</string>
+    <string name="record_cta">Nouvel enregistrement</string>
+    <string name="goal_title">Objectif du jour</string>
+    <string name="goal_percent">%1$d %%</string>
+    <string name="goal_of">sur %1$s</string>
+    <string name="goal_summary">%1$d cours aujourd\'hui · %2$d à analyser</string>
+    <string name="stats_courses">Cours aujourd\'hui</string>
+    <string name="stats_pending">À analyser</string>
+    <string name="stats_reviews">À réviser</string>
+    <string name="week_title">Cette semaine</string>
+    <string name="week_days_count">%1$d jours actifs</string>
+    <string name="recent_courses">Cours récents</string>
+    <string name="see_all">Tout voir</string>
+    <string name="course_meta">%1$s · %2$s · %3$s</string>
+    <string name="status_analysed">Analysé</string>
+    <string name="status_pending">En attente</string>
+    <string name="pending_title">%1$d analyses en attente</string>
+    <string name="pending_body">Sélectionnez jusqu\'à 5 enregistrements pour les structurer ensemble.</string>
+    <string name="open_basket">Ouvrir le panier</string>
+    <string name="revision_label">RÉVISION DU JOUR</string>
+    <string name="revision_meta">%1$s · %2$s</string>
+    <string name="revision_mastery">%1$d %% maîtrisé</string>
+    <string name="resume_revisions">Reprendre mes révisions</string>
+    <string name="demo_notice">Aperçu · données de démonstration</string>
+
+    <!-- Écrans en préparation -->
+    <string name="placeholder_badge">En préparation</string>
+
+    <string name="basket_title">Mon panier</string>
+    <string name="basket_subtitle">Les enregistrements de la journée, réunis avant d\'être transformés en cours structuré.</string>
+    <string name="basket_f1">Enregistrements du jour regroupés automatiquement</string>
+    <string name="basket_f2">Sélection multiple, 5 fichiers maximum par analyse</string>
+    <string name="basket_f3">Lancement de l\'analyse dès la sélection validée</string>
+
+    <string name="courses_title">Mes cours</string>
+    <string name="courses_subtitle">Chaque cours devient un document clair, chapitré et relisible.</string>
+    <string name="courses_f1">Chapitres, leçons et notions clés</string>
+    <string name="courses_f2">Définitions, formules, méthodes et exemples</string>
+    <string name="courses_f3">Recherche par matière et par notion</string>
+
+    <string name="tutor_title">Tuteur IA</string>
+    <string name="tutor_subtitle">Un professeur patient qui explique à ton rythme et te laisse chercher.</string>
+    <string name="tutor_f1">Explications progressives adaptées à ton niveau</string>
+    <string name="tutor_f2">Questions libres et indices avant la réponse</string>
+    <string name="tutor_f3">Historique des échanges par cours</string>
+
+    <string name="progress_title">Ma progression</string>
+    <string name="progress_subtitle">Comprendre ce qui est acquis, ce qui résiste et ce qu\'il faut revoir.</string>
+    <string name="progress_f1">Temps d\'étude et régularité</string>
+    <string name="progress_f2">Résultats par matière et lacunes détectées</string>
+    <string name="progress_f3">Révisions planifiées selon tes oublis</string>
+
+    <string name="recording_title">Enregistrement</string>
+    <string name="recording_subtitle">Le cœur de l\'application : capturer le cours sans jamais perdre le fil.</string>
+    <string name="recording_f1">Choix de la matière avant de démarrer</string>
+    <string name="recording_f2">Chronomètre et onde sonore en direct</string>
+    <string name="recording_f3">Démarrer, mettre en pause, reprendre et terminer</string>
+
+    <!-- Matières -->
+    <string name="subject_maths">Mathématiques</string>
+    <string name="subject_physics">Physique</string>
+    <string name="subject_french">Français</string>
+    <string name="subject_english">Anglais</string>
+    <string name="subject_history">Histoire</string>
+    <string name="subject_geography">Géographie</string>
+    <string name="subject_drawing">Dessin technique</string>
+    <string name="subject_other">Autre matière</string>
 </resources>
