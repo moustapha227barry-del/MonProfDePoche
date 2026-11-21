@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SectionHeader } from "@/components/SectionHeader";
@@ -11,30 +11,47 @@ import { StatTile } from "@/components/StatTile";
 import { WeeklyBars } from "@/components/WeeklyBars";
 import { getSubject } from "@/domain/subject";
 import {
-  DEMO_HOME_STATE,
   goalProgress,
   weekTotalMinutes,
   type HomeUiState,
   type RecentCourse,
   type RevisionReminder,
 } from "@/features/home/homeState";
+import { useHomeState } from "@/features/home/useHomeState";
 import { withAlpha } from "@/lib/color";
 import { formatDuration } from "@/lib/format";
 import { colors, gradients, radii, typography } from "@/theme";
 
 const WEEK_DAYS = ["L", "M", "M", "J", "V", "S", "D"] as const;
 
-type HomeScreenProps = {
-  state?: HomeUiState;
-};
-
 /**
  * Écran d'accueil : objectif du jour, chiffres clés, activité de la semaine,
- * cours récents, analyses en attente et révision du jour.
+ * cours récents, analyses en attente et révision du jour. Les valeurs sont
+ * calculées à partir des données réelles du téléphone.
  */
-export function HomeScreen({ state = DEMO_HOME_STATE }: HomeScreenProps) {
+export function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { state } = useHomeState();
+
+  if (!state) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colors.ink,
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 12,
+        }}
+      >
+        <ActivityIndicator color={colors.violetSoft} />
+        <Text style={[typography.bodySmall, { color: colors.textSecondary }]}>
+          Chargement de ton espace…
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -47,7 +64,10 @@ export function HomeScreen({ state = DEMO_HOME_STATE }: HomeScreenProps) {
       }}
       showsVerticalScrollIndicator={false}
     >
-      <HomeHeader streakDays={state.streakDays} />
+      <HomeHeader
+        streakDays={state.streakDays}
+        onOpenSettings={() => router.push("/settings")}
+      />
 
       <DailyGoalCard state={state} />
 
@@ -81,13 +101,15 @@ export function HomeScreen({ state = DEMO_HOME_STATE }: HomeScreenProps) {
         onOpenBasket={() => router.navigate("/basket")}
       />
 
-      <RevisionCard
-        revision={state.revision}
-        onOpenProgress={() => router.navigate("/progress")}
-      />
+      {state.revision ? (
+        <RevisionCard
+          revision={state.revision}
+          onOpenProgress={() => router.navigate("/progress")}
+        />
+      ) : null}
 
       <Text style={[typography.labelSmall, { textAlign: "center", marginTop: 4 }]}>
-        Aperçu · données de démonstration
+        Tes données restent sur ce téléphone.
       </Text>
     </ScrollView>
   );
@@ -97,7 +119,13 @@ export function HomeScreen({ state = DEMO_HOME_STATE }: HomeScreenProps) {
 // En-tête
 // ---------------------------------------------------------------------------
 
-function HomeHeader({ streakDays }: { streakDays: number }) {
+function HomeHeader({
+  streakDays,
+  onOpenSettings,
+}: {
+  streakDays: number;
+  onOpenSettings: () => void;
+}) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center", paddingTop: 8 }}>
       <View style={{ flex: 1 }}>
@@ -123,21 +151,28 @@ function HomeHeader({ streakDays }: { streakDays: number }) {
         </Text>
       </View>
 
-      <LinearGradient
-        colors={gradients.record}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          alignItems: "center",
-          justifyContent: "center",
-          marginLeft: 10,
-        }}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Ouvrir les paramètres"
+        onPress={onOpenSettings}
+        hitSlop={6}
+        style={{ marginLeft: 10 }}
       >
-        <Text style={[typography.title, { color: "#FFFFFF" }]}>M</Text>
-      </LinearGradient>
+        <LinearGradient
+          colors={gradients.record}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 22,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Text style={[typography.title, { color: "#FFFFFF" }]}>M</Text>
+        </LinearGradient>
+      </Pressable>
     </View>
   );
 }

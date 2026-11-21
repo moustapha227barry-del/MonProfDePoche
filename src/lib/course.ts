@@ -244,5 +244,9 @@ export function parseStoredCourse(value: unknown): Course | null {
     uncertainties: Array.isArray(candidate.uncertainties)
       ? candidate.uncertainties.filter((item): item is string => typeof item === "string")
       : [],
+    transcript:
+      typeof candidate.transcript === "string" && candidate.transcript.length > 0
+        ? candidate.transcript
+        : undefined,
   };
 }

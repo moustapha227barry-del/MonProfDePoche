@@ -138,9 +138,9 @@ modules natifs. Tout ce qui n'y est pas inclus demande un **development build**.
 |---|---|---|---|
 | Enregistrer le micro (app au premier plan) | `expo-audio` | ✅ inclus | **implémenté** dans l'écran Enregistrement |
 | Niveau sonore pour l'onde animée | `expo-audio` (metering) | ✅ | **implémenté** : l'onde suit le niveau réel du micro |
-| Lire un enregistrement | `expo-audio` | ✅ | prévu pour l'écoute des cours sauvegardés |
+| Lire un enregistrement | `expo-audio` | ✅ | **implémenté** : lecture, pause, progression |
 | Enregistrement écran verrouillé / en arrière-plan | `expo-audio` + `enableBackgroundRecording` | ❌ | service de premier plan Android + notification persistante ; **development build** puis APK |
-| Stockage local (cours, notions, révisions) | `expo-sqlite` | ✅ inclus | phase cours ; le panier utilise déjà des fichiers JSON |
+| Stockage local (cours, notions, révisions) | fichiers JSON (`expo-file-system`) | ✅ | cours, progression et profil persistés ; SQLite non nécessaire pour l'instant |
 | Fichiers audio locaux | `expo-file-system` | ✅ inclus | **implémenté** : index `recordings.json` + fichiers `.m4a` |
 | Graphiques et ondes | Views natives / `react-native-svg` | ✅ | aucune dépendance native supplémentaire ici |
 | Notifications **locales** (rappels de révision) | `expo-notifications` | ✅ | |
@@ -243,10 +243,10 @@ Le lot contient, pour chaque fichier : identifiant, titre, nom, URI locale,
 matiİre, durée et type MIME `audio/mp4`, plus la durée totale et un identifiant
 `lot-AAAAMMJJ-HHMMSS`. **Aucun son n'est copié, déplacé ni envoyé.**
 
-### Ce que le panier ne fait pas (volontairement)
+### Ce que le panier ne fait pas lui-même
 
-- il **n'appelle aucune IA** (ni Gemini, ni OpenRouter) : le bouton prépare et
-  valide le lot, il ne prétend pas analyser ;
+- il ne lance pas l'analyse : « Préparer l'analyse » valide le lot, puis
+  « Analyser le lot » ouvre l'écran d'analyse, qui appelle le backend ;
 - il ne supprime aucun fichier audio et ne touche pas aux autres onglets ;
 - il ne déplace pas les `.m4a` : le lot les référence à leur emplacement
   d'origine, dans le dossier documents de l'application.
@@ -319,17 +319,61 @@ l'APK Expo, ou changer `android.package` dans `app.json` pour cohabiter.
 | ✅ Migration | Expo + TypeScript, thème, navigation, accueil | aucune |
 | ✅ 4. Enregistrement | matière, chronomètre, onde, pause/reprise, sauvegarde locale | `expo-audio` (Expo Go suffisant) |
 | ✅ 5. Panier | sélection réelle de 5 fichiers max, lot préparé et persisté | `expo-file-system` (Expo Go suffisant) |
-| 5 bis. Cours | stockage SQLite, liste des cours | `expo-sqlite` (Expo Go) |
-| 6. Analyse IA | envoi du lot préparé à un backend sécurisé, structuration en chapitres et notions | API + secrets serveur |
-| 7. Tuteur | conversation, indices progressifs, historique | API + secrets serveur |
-| 8. Exercices et révisions | génération d'exercices, répétition espacée | locale |
-| 9. Progression | graphiques, lacunes, objectifs | locale |
+| ✅ 5 bis. Cours | stockage JSON, liste, recherche, détail, renommage, suppression | aucune |
+| ✅ 6. Analyse IA | client + backend worker, transcription, chapitres, notions, incertitudes | **clé API + déploiement à fournir** |
+| ✅ 7. Tuteur | conversation ancrée sur le cours, citations vérifiées | **backend requis** |
+| 8. Exercices et révisions | génération d'exercices, répétition espacée | API locale/IA |
+| ✅ 9. Progression | temps, régularité, chapitres, maîtrise, résultats d'exercices | locale |
+| ✅ 9 bis. Compte local | profil, consentement IA, suppression des données | auth externe pour e-mail/Google |
 | 10. Enregistrement en arrière-plan | service de premier plan, notification | **development build / APK** |
 | 11. Distribution | APK EAS, lien + QR code | EAS |
 
 ---
 
-## 10. Sauvegarde de l'ancienne version
+## 10. Cours, tuteur, progression et paramètres
+
+| Écran / route | Contenu |
+|---|---|
+| `(tabs)/courses` | liste réelle, recherche accents-insensible, filtre par matière |
+| `course/[id]` | chapitres dépliables, sections, notions, incertitudes, transcription, sources audio, renommage, suppression |
+| `analysis` | envoi du lot au backend, états d’erreur, création du cours |
+| `(tabs)/tutor` | tuteur ancré sur un cours, citations vérifiées, refus sans backend |
+| `(tabs)/progress` | temps, régularité, chapitres étudiés, maîtrise, exercices |
+| `settings` | profil local, consentement IA, sauvegarde cloud (inactive), suppression des données |
+
+### Fichiers de stockage (dossier documents)
+
+| Fichier | Contenu |
+|---|---|
+| `recordings.json` | enregistrements + panier + cours associé |
+| `prepared-analysis.json` | lot validé prêt pour l’analyse |
+| `courses.json` | cours structurés, transcription, incertitudes |
+| `progress.json` | résultats d’exercices et révisions programmées |
+| `profile.json` | profil local et préférences de confidentialité |
+
+Les repositories sont testés sur un stockage mémoire, avec les mêmes
+sérialisations que sur le téléphone (persistance entre deux instances =
+redémarrage).
+
+### Analyse et tuteur
+
+Le client appelle uniquement `EXPO_PUBLIC_API_URL`. Le worker du dossier
+`backend/` détient la clé du fournisseur et applique les limites. Voir
+[`docs/AI-BACKEND.md`](AI-BACKEND.md) pour le déploiement et les coûts.
+
+### Limites de cette étape
+
+- **Authentification e-mail / Google non branchée** : boutons inactifs, profil
+  local seulement.
+- **Sauvegarde cloud inactive** : l’option existe, aucune donnée n’est envoyée.
+- **Exercices non générés** : la progression sait déjà enregistrer leurs
+  résultats, mais aucun exercice n’est créé pour l’instant.
+- **Pas de révisions programmées** : `revisionsDue` reste à 0 tant que la
+  répétition espacée n’est pas branchée.
+
+---
+
+## 11. Sauvegarde de l'ancienne version
 
 - `legacy-android/` : projet Kotlin/Compose complet (Gradle, ressources, README
   d'origine). Il n'est pas compilé par le projet Expo et peut être ouvert

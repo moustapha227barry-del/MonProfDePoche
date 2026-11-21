@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import type { ComponentProps } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -22,6 +22,8 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { Waveform } from "@/components/Waveform";
 import type { Recording } from "@/domain/course";
 import { SUBJECTS, getSubject, type SubjectId } from "@/domain/subject";
+import { RecordingLibraryRow } from "@/features/recording/RecordingLibraryRow";
+import { useRecordingPlayback } from "@/features/recording/useRecordingPlayback";
 import { useRecordingSession } from "@/features/recording/useRecordingSession";
 import { withAlpha } from "@/lib/color";
 import { formatRecordingTimer } from "@/lib/format";
@@ -67,6 +69,14 @@ export function RecordingScreen() {
   const [savedRecordings, setSavedRecordings] = useState<Recording[]>([]);
   const [lastSaved, setLastSaved] = useState<Recording | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draftTitle, setDraftTitle] = useState("");
+
+  const playback = useRecordingPlayback();
+  const missingIds = useMemo(
+    () => recordingRepository.missingIds(savedRecordings),
+    [savedRecordings],
+  );
 
   const locked = session.phase !== "idle";
 
@@ -103,6 +113,56 @@ export function RecordingScreen() {
     setNotice(null);
     await refreshSaved();
   }, [refreshSaved, session]);
+
+  const handleSaveTitle = useCallback(async () => {
+    if (!editingId) return;
+    try {
+      const updated = await recordingRepository.rename(editingId, draftTitle);
+      if (!updated) {
+        setNotice("Le titre ne peut pas être vide.");
+        return;
+      }
+      setEditingId(null);
+      setDraftTitle("");
+      setLastSaved((current) => (current?.id === updated.id ? updated : current));
+      await refreshSaved();
+    } catch (cause) {
+      console.warn("[enregistrement] renommage impossible", cause);
+      setNotice("Le titre n’a pas pu être enregistré.");
+    }
+  }, [draftTitle, editingId, refreshSaved]);
+
+  const handleDelete = useCallback(
+    (recording: Recording) => {
+      Alert.alert(
+        "Supprimer cet enregistrement ?",
+        `« ${recording.title} » et son fichier audio seront supprimés du téléphone. Cette action est définitive.`,
+        [
+          { text: "Annuler", style: "cancel" },
+          {
+            text: "Supprimer",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                if (playback.currentId === recording.id) playback.stop();
+                await recordingRepository.remove(recording.id);
+                if (editingId === recording.id) {
+                  setEditingId(null);
+                  setDraftTitle("");
+                }
+                setLastSaved((current) => (current?.id === recording.id ? null : current));
+                await refreshSaved();
+              } catch (cause) {
+                console.warn("[enregistrement] suppression impossible", cause);
+                setNotice("L’enregistrement n’a pas pu être supprimé.");
+              }
+            },
+          },
+        ],
+      );
+    },
+    [editingId, playback, refreshSaved],
+  );
 
   const leave = useCallback(() => {
     if (!session.isActive) {
@@ -374,7 +434,27 @@ export function RecordingScreen() {
         </Text>
       ) : (
         savedRecordings.map((recording) => (
-          <SavedRecordingRow key={recording.id} recording={recording} />
+          <RecordingLibraryRow
+            key={recording.id}
+            recording={recording}
+            missing={missingIds.includes(recording.id)}
+            playing={playback.currentId === recording.id && playback.playing}
+            positionMs={playback.currentId === recording.id ? playback.positionMs : 0}
+            editing={editingId === recording.id}
+            draftTitle={draftTitle}
+            onChangeDraft={setDraftTitle}
+            onTogglePlay={() => void playback.toggle(recording)}
+            onStartEdit={() => {
+              setEditingId(recording.id);
+              setDraftTitle(recording.title);
+            }}
+            onSaveTitle={() => void handleSaveTitle()}
+            onCancelEdit={() => {
+              setEditingId(null);
+              setDraftTitle("");
+            }}
+            onDelete={() => handleDelete(recording)}
+          />
         ))
       )}
     </ScrollView>
@@ -584,44 +664,3 @@ function ActionButton({
 }
 
 // ---------------------------------------------------------------------------
-// Liste locale
-// ---------------------------------------------------------------------------
-
-function SavedRecordingRow({ recording }: { recording: Recording }) {
-  const subject = getSubject(recording.subject);
-
-  return (
-    <Card padding={14}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-        <View
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 13,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: withAlpha(subject.accent, 0.16),
-          }}
-        >
-          <Ionicons name="mic" size={18} color={subject.accent} />
-        </View>
-
-        <View style={{ flex: 1 }}>
-          <Text numberOfLines={1} style={typography.title}>
-            {recording.title}
-          </Text>
-          <Text numberOfLines={1} style={[typography.labelSmall, { marginTop: 4 }]}>
-            {subject.label} · {formatRecordingDuration(recording.durationMs)} ·{" "}
-            {formatRecordingDate(recording.createdAt)}
-          </Text>
-        </View>
-
-        {recording.addedToBasketAt ? (
-          <Text style={[typography.labelSmall, { color: colors.greenSoft }]}>Au panier</Text>
-        ) : (
-          <Text style={[typography.labelSmall, { color: colors.blueSoft }]}>À analyser</Text>
-        )}
-      </View>
-    </Card>
-  );
-}

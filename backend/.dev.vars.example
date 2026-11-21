@@ -1,0 +1,7 @@
+# Copie ce fichier en `.dev.vars` pour tester le backend en local.
+# `.dev.vars` est ignoré par Git : n'y mets jamais de valeur dans le dépôt.
+AI_API_KEY=
+AI_BASE_URL=https://api.openai.com/v1
+AI_TRANSCRIPTION_MODEL=whisper-1
+AI_CHAT_MODEL=gpt-4o-mini
+ALLOWED_ORIGIN=*

@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "doctor": "npx expo-doctor",
     "export:android": "expo export --platform android",
-    "test": "node --test tests/"
+    "test": "node --test tests/",
+    "typecheck:backend": "tsc -p backend/tsconfig.json --noEmit"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

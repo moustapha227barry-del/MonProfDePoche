@@ -276,11 +276,37 @@ export function BasketScreen() {
             </View>
           </Card>
         ) : (
-          <GradientButton
-            text="Préparer l’analyse"
-            icon="sparkles"
-            onPress={() => void prepare()}
-          />
+          <>
+            <GradientButton
+              text="Préparer l’analyse"
+              icon="sparkles"
+              onPress={() => void prepare()}
+            />
+            {batchIsCurrent && batch ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Analyser le lot préparé"
+                onPress={() => router.push("/analysis")}
+                style={({ pressed }) => ({
+                  height: 54,
+                  borderRadius: radii.md,
+                  borderWidth: 1,
+                  borderColor: withAlpha(colors.green, 0.45),
+                  backgroundColor: withAlpha(colors.green, 0.12),
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexDirection: "row",
+                  gap: 8,
+                  opacity: pressed ? 0.85 : 1,
+                })}
+              >
+                <Ionicons name="sparkles" size={18} color={colors.greenSoft} />
+                <Text style={[typography.title, { color: colors.greenSoft }]}>
+                  Analyser le lot
+                </Text>
+              </Pressable>
+            ) : null}
+          </>
         )
       ) : null}
 

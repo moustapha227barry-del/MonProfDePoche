@@ -91,6 +91,36 @@ export const recordingRepository = {
     return updated;
   },
 
+  /**
+   * Relie des enregistrements au cours issu de leur analyse et les sort du
+   * panier. Le fichier audio n'est pas modifié.
+   */
+  async attachCourse(ids: readonly string[], courseId: string): Promise<void> {
+    if (ids.length === 0) return;
+    const recordings = await readIndex();
+    await writeIndex(
+      recordings.map((item) => {
+        if (!ids.includes(item.id)) return item;
+        const copy: Recording = { ...item, courseId };
+        delete copy.addedToBasketAt;
+        return copy;
+      }),
+    );
+  },
+
+  /** Détache les enregistrements d'un cours supprimé, sans effacer l'audio. */
+  async detachCourse(courseId: string): Promise<void> {
+    const recordings = await readIndex();
+    await writeIndex(
+      recordings.map((item) => {
+        if (item.courseId !== courseId) return item;
+        const copy: Recording = { ...item };
+        delete copy.courseId;
+        return copy;
+      }),
+    );
+  },
+
   /** Supprime les métadonnées et le fichier audio associé. */
   async remove(id: string): Promise<void> {
     const recordings = await readIndex();

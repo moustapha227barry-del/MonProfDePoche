@@ -175,6 +175,7 @@ export function parseAnalysisResponse(
       status: "done",
       recordingIds: options.batch.files.map((file) => file.recordingId),
       uncertainties,
+      transcript,
     },
   };
 }

@@ -24,6 +24,9 @@ export default function RootLayout() {
       >
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="recording" options={{ animation: "slide_from_bottom" }} />
+        <Stack.Screen name="course/[id]" />
+        <Stack.Screen name="analysis" />
+        <Stack.Screen name="settings" />
       </Stack>
     </SafeAreaProvider>
   );

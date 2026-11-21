@@ -1,127 +1,156 @@
 # Mon Prof de Poche
 
 Application mobile pour **enregistrer un cours, le structurer avec l'IA et le
-réviser** : cours chapitrés, tuteur IA, exercices et suivi de progression.
+réviser** : cours chapitrés, tuteur IA, progression et suivi des révisions.
 
 Cette version est développée en **React Native + Expo + TypeScript**. Elle
 remplace l'application Android Kotlin/Jetpack Compose, conservée intacte dans
-[`legacy-android/`](legacy-android) (voir plus bas).
+[`legacy-android/`](legacy-android).
 
 ## Démarrage rapide
 
-Prérequis : Node.js 20 ou plus récent, VS Code, et l'application **Expo Go**
-(SDK 58) sur un téléphone Android.
+Prérequis : Node.js 20+, VS Code, et l'application **Expo Go** (SDK 58) sur un
+téléphone Android.
 
 ```bash
 npm install
 npx expo start
 ```
 
-Scannez le QR code affiché dans le terminal avec Expo Go. Les instructions
-détaillées (VS Code, réseau, dépannage) sont dans
-[`docs/MIGRATION-EXPO.md`](docs/MIGRATION-EXPO.md).
+Scannez le QR code avec Expo Go.
 
-**Tester l'enregistrement sur ton téléphone** : guide pas à pas dans
-[`docs/TEST-EXPO-GO.md`](docs/TEST-EXPO-GO.md) (10 minutes, avec les résultats
-attendus pour chaque étape). **Tester le panier** :
-[`docs/TEST-PANIER.md`](docs/TEST-PANIER.md).
+**Guides pas à pas** :
+
+- [`docs/TEST-APP.md`](docs/TEST-APP.md) — lancer sur un Samsung et parcours de test complet ;
+- [`docs/TEST-EXPO-GO.md`](docs/TEST-EXPO-GO.md) — premier enregistrement audio ;
+- [`docs/TEST-PANIER.md`](docs/TEST-PANIER.md) — panier et limite de 5 fichiers ;
+- [`docs/AI-BACKEND.md`](docs/AI-BACKEND.md) — analyse IA et backend sécurisé.
 
 ## État actuel
 
-| Élément | État |
+| Fonctionnalité | État |
 |---|---|
 | Base Expo SDK 58 / React Native 0.88 / TypeScript strict | ✅ |
-| Identité visuelle sombre (couleurs, typographie, cartes, dégradés) | ✅ reportée à l'identique |
-| Navigation 5 onglets + bouton central d'enregistrement | ✅ |
-| Écran d'accueil complet | ✅ avec données de démonstration |
-| **Enregistrement audio** : matière, titre, chronomètre, onde, pause/reprise | ✅ fonctionnel dans Expo Go |
-| **Sauvegarde locale** : un fichier `.m4a` AAC + métadonnées par enregistrement | ✅ dans les documents de l'app |
-| **Panier d'analyse** : sélection réelle, 5 fichiers max, lot préparé et persistant | ✅ fonctionnel dans Expo Go |
-| Cours, Tuteur, Progression | 🚧 écrans « en préparation » |
-| Analyse IA (Gemini / OpenRouter) | ⏳ le lot est préparé et validé, aucun appel réseau |
-| APK autonome (hors Play Store) | ⏳ configuration prête (`eas.json`) |
+| Thème sombre, cartes arrondies, navigation 5 onglets + micro | ✅ conservé |
+| Enregistrement : matière, titre, chrono, onde, pause/reprise/arrêt | ✅ |
+| Sauvegarde locale : un `.m4a` AAC + métadonnées par enregistrement | ✅ |
+| Écoute, renommage et suppression des enregistrements | ✅ |
+| Panier : sélection réelle, 5 max, persistance, lot validé | ✅ |
+| Analyse IA : transcription, chapitres, sections, notions, incertitudes | ✅ code + backend, ⛔ clé et déploiement à fournir |
+| Cours : liste, recherche, filtres, détail, renommage, suppression | ✅ |
+| Tuteur IA appuyé sur les cours, citations vérifiées | ✅ code, ⛔ backend requis |
+| Progression réelle : temps, régularité, chapitres, maîtrise, exercices | ✅ |
+| Compte local, confidentialité, suppression des données | ✅ local ; ⛔ auth e-mail/Google |
+| Sauvegarde cloud | ⏳ option préparée, inactive |
+| Enregistrement en arrière-plan | ⏳ development build / APK |
 
-### Enregistrement audio
+**Aucune donnée n'est simulée.** Les écrans lisent le stockage du téléphone ;
+l'analyse et le tuteur refusent de fonctionner sans backend configuré plutôt
+que d'inventer une réponse.
 
-Depuis l'accueil, le bouton central de la barre (ou « Nouvel enregistrement »)
-ouvre l'écran d'enregistrement :
+## Fonctionnement
 
-1. choisir la matière et, si besoin, saisir un titre ;
-2. démarrer : la permission du microphone est demandée proprement ;
-3. mettre en pause, reprendre, puis terminer ;
-4. chaque arrêt crée un enregistrement **indépendant** : fichier `.m4a` (AAC
-   44,1 kHz mono, 96 kbit/s) et entrée de métadonnées (titre, matière, date,
-   durée, nom et chemin du fichier) dans `recordings.json`.
+### Enregistrement
 
-Tout reste sur le téléphone. La capture fonctionne **application ouverte** :
-l'enregistrement en arrière-plan demandera un development build puis un APK.
-Les détails (permissions, emplacement des fichiers, limites) sont dans
-[`docs/MIGRATION-EXPO.md`](docs/MIGRATION-EXPO.md#6-bis-enregistrement-audio).
+1. choisir la matière et, si besoin, un titre ;
+2. démarrer (permission micro demandée), mettre en pause, reprendre, terminer ;
+3. chaque arrêt crée un enregistrement indépendant : fichier `.m4a` et entrée
+   dans `recordings.json` (titre, matière, date, durée, chemin) ;
+4. la liste permet d'**écouter**, **renommer** et **supprimer** (avec
+   confirmation) chaque enregistrement.
 
-### Panier d'analyse
+### Panier
 
-L'onglet **Panier** liste les vrais enregistrements du téléphone et permet d'en
-sélectionner **5 au maximum** :
+- liste tous les enregistrements réels, sélection de **5 maximum** ;
+- compteur `3/5`, message explicite au sixième, retrait sans supprimer l'audio ;
+- sélection persistée après fermeture ; « Préparer l'analyse » vérifie que
+  chaque fichier existe puis enregistre le lot dans `prepared-analysis.json`.
 
-1. toucher un enregistrement l'ajoute au panier, le retoucher l'en retire ;
-2. le compteur `3/5` et la durée cumulée se mettent à jour immédiatement ;
-3. un sixième fichier est refusé avec un message explicite ;
-4. « Retirer » ne supprime **jamais** le fichier `.m4a`, seulement son
-   appartenance au panier ;
-5. « Préparer l'analyse » vérifie que chaque fichier existe encore, puis
-   enregistre le lot dans `prepared-analysis.json`.
+### Analyse IA
 
-La sélection est persistée dans `recordings.json` : elle survit à la fermeture
-de l'application. Aucune IA n'est appelée à cette étape — le lot est prêt pour
-la phase suivante. Détails :
-[`docs/MIGRATION-EXPO.md`](docs/MIGRATION-EXPO.md#6-ter-panier-danalyse).
+- le lot est envoyé au **backend sécurisé** (`backend/`), jamais directement au
+  fournisseur : la clé API reste côté serveur ;
+- transcription, structuration en chapitres/sections, extraction des
+  définitions, formules, méthodes et exemples ;
+- les passages incertains sont **signalés**, pas inventés ;
+- le cours conserve les identifiants de ses enregistrements d'origine.
+
+Sans `EXPO_PUBLIC_API_URL`, l'écran affiche « backend non configuré » et ne crée
+aucun cours.
+
+### Cours, tuteur, progression
+
+- cours listés, recherchables (accents ignorés), filtrables par matière ;
+- chapitre dépliable, notions avec maîtrise « À revoir / Compris » ;
+- tuteur qui répond à partir du cours choisi, avec citations vérifiées ;
+- progression calculée sur les enregistrements et les cours réels.
+
+### Paramètres
+
+- profil local, consentement IA, option de sauvegarde cloud (inactive) ;
+- suppression complète des données (double confirmation) ;
+- connexion e-mail / Google : boutons présents mais **inactifs**, en attente du
+  backend d'authentification. Aucun faux compte n'est créé.
 
 ## Structure
 
 ```
-app/                     routes Expo Router (un fichier = un écran)
-  _layout.tsx            Stack racine, thème sombre, barre d'état
-  (tabs)/                5 onglets + barre de navigation sur mesure
-  recording.tsx          enregistrement, hors barre d'onglets
+app/                     routes Expo Router
+  (tabs)/                Accueil, Panier, Cours, Tuteur, Progrès
+  recording.tsx          enregistrement
+  course/[id].tsx        détail d'un cours
+  analysis.tsx           analyse d'un lot
+  settings.tsx           compte et paramètres
 src/
-  components/            cartes, boutons, barres, onde sonore, écrans types
-  features/              écrans et état par fonctionnalité
-    recording/           écran d'enregistrement + hook expo-audio
-    basket/              écran du panier d'analyse
+  features/              écrans par fonctionnalité
   domain/                modèles (cours, notions, exercices, progression)
-  services/              contrats audio, analyse IA, stockage local
-    storage/             index local des enregistrements, lot d'analyse préparé
-  theme/                 couleurs, dégradés, typographie, rayons
-  lib/                   durées, helpers d'enregistrement, helpers du panier, couleurs
-tests/                   tests Node des helpers (enregistrement et panier)
+  services/
+    ai/                  clients HTTP analyse + tuteur
+    storage/             repositories JSON testables + câblage Expo
+  lib/                   helpers purs (panier, cours, progression, IA)
+backend/                 worker Cloudflare (clé IA côté serveur)
+tests/                   tests Node (helpers, repositories, clients HTTP, backend)
+docs/                    guides de test et documentation d'architecture
 legacy-android/          ancienne application Kotlin + Compose (archive)
-docs/MIGRATION-EXPO.md   guide de migration, Expo Go, APK, sécurité
-docs/TEST-EXPO-GO.md     test pas à pas de l'enregistrement sur Android
-docs/TEST-PANIER.md      test pas à pas du panier sur Android
 ```
 
 ## Scripts
 
 | Commande | Effet |
 |---|---|
-| `npm start` | démarre le serveur de développement Expo |
-| `npm run android` | ouvre l'app sur un émulateur/téléphone Android |
-| `npm run typecheck` | vérifie les types TypeScript |
-| `npm run doctor` | vérifie la cohérence des dépendances Expo |
-| `npm run export:android` | compile le bundle Android sans appareil |
-| `npm test` | tests Node des helpers d'enregistrement et du panier (`node --test`) |
+| `npm start` | serveur de développement Expo |
+| `npm run android` | ouvre l'app sur un appareil Android |
+| `npm run typecheck` | vérification TypeScript de l'application |
+| `npm run typecheck:backend` | vérification TypeScript du worker |
+| `npm run doctor` | cohérence des dépendances Expo |
+| `npm run export:android` | compilation du bundle Android |
+| `npm test` | tests Node (helpers, stockage, HTTP, backend) |
+
+## Configuration du backend
+
+```bash
+cp .env.example .env      # puis renseigner EXPO_PUBLIC_API_URL
+cd backend && npx wrangler login
+npx wrangler secret put AI_API_KEY
+npx wrangler deploy
+```
+
+Détails, coûts et limites : [`docs/AI-BACKEND.md`](docs/AI-BACKEND.md).
 
 ## Sécurité
 
-Aucune clé d'API n'est présente dans le dépôt. L'application appellera un
-backend sécurisé qui détient les clés côté serveur ; le client ne connaîtra
-qu'une URL publique (`EXPO_PUBLIC_API_URL`). Les fichiers `.env*` sont ignorés
-par Git.
+- Aucune clé d'API dans le dépôt, `app.json`, `eas.json` ou le bundle mobile.
+- Seule variable publique : `EXPO_PUBLIC_API_URL` (une URL).
+- Les fichiers `.env*` sont ignorés par Git (`.env.example` est fourni vide).
+- Les enregistrements et cours restent sur le téléphone ; l'envoi au service IA
+  exige une action explicite et le consentement activé dans les paramètres.
+- Les citations du tuteur sont vérifiées côté client : une citation inconnue du
+  cours est supprimée et la réponse est signalée comme non appuyée.
 
 ## Ancienne version Kotlin
 
 - Dossier : [`legacy-android/`](legacy-android) — code source complet, non modifié.
 - Branche dédiée : `legacy/kotlin-v1`.
 - Tag : `kotlin-v1-final`.
-- Capture de l'écran d'accueil d'origine :
+- Capture d'origine :
   [`docs/assets/accueil-kotlin-reference.png`](docs/assets/accueil-kotlin-reference.png).

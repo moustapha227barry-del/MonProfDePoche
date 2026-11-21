@@ -151,8 +151,8 @@ inaccessible sans câble USB.
 
 ## J. Limites connues
 
-- **Pas encore d'analyse IA** : le lot est préparé, validé et stocké, mais aucun
-  appel à Gemini ou OpenRouter n'est fait.
-- **Pas de lecture audio** dans le panier : on prépare, on n'écoute pas encore.
-- **Pas de suppression d'enregistrement** depuis l'interface.
+- **Analyse réelle** : après « Préparer l'analyse », le bouton « Analyser le lot »
+  envoie les fichiers au backend sécurisé. Sans `EXPO_PUBLIC_API_URL`, l'écran
+  l'indique et ne crée aucun cours.
 - **Une seule analyse à la fois** : un nouveau lot remplace le précédent.
+- **Pas de lecture audio** dans le panier : on prépare, on n'écoute pas encore.

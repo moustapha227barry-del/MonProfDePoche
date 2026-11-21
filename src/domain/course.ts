@@ -73,6 +73,8 @@ export type Course = {
   recordingIds: string[];
   /** Passages que l'IA n'a pas pu établir : signalés, jamais inventés. */
   uncertainties: string[];
+  /** Transcription complète de l'audio, conservée localement pour la traçabilité. */
+  transcript?: string;
 };
 
 /** Exercice généré par le tuteur pour vérifier une notion. */

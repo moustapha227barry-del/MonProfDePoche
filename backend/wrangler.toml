@@ -1,0 +1,13 @@
+name = "mon-prof-de-poche-ai"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+
+# La clé API n'est PAS ici : elle se configure avec
+#   npx wrangler secret put AI_API_KEY
+# Les variables ci-dessous ne contiennent aucun secret.
+[vars]
+AI_BASE_URL = "https://api.openai.com/v1"
+AI_TRANSCRIPTION_MODEL = "whisper-1"
+AI_CHAT_MODEL = "gpt-4o-mini"
+# Mets ici l'origine exacte de l'application en production.
+ALLOWED_ORIGIN = "*"
