@@ -29,9 +29,28 @@ détaillées (VS Code, réseau, dépannage) sont dans
 | Identité visuelle sombre (couleurs, typographie, cartes, dégradés) | ✅ reportée à l'identique |
 | Navigation 5 onglets + bouton central d'enregistrement | ✅ |
 | Écran d'accueil complet | ✅ avec données de démonstration |
-| Panier, Cours, Tuteur, Progression, Enregistrement | 🚧 écrans « en préparation » |
-| Enregistrement audio, stockage local, analyse IA | ⏳ prochaines phases |
+| **Enregistrement audio** : matière, titre, chronomètre, onde, pause/reprise | ✅ fonctionnel dans Expo Go |
+| **Sauvegarde locale** : un fichier `.m4a` AAC + métadonnées par enregistrement | ✅ dans les documents de l'app |
+| Panier, Cours, Tuteur, Progression | 🚧 écrans « en préparation » |
+| Analyse IA et panier d'analyse | ⏳ prochaine phase |
 | APK autonome (hors Play Store) | ⏳ configuration prête (`eas.json`) |
+
+### Enregistrement audio
+
+Depuis l'accueil, le bouton central de la barre (ou « Nouvel enregistrement »)
+ouvre l'écran d'enregistrement :
+
+1. choisir la matière et, si besoin, saisir un titre ;
+2. démarrer : la permission du microphone est demandée proprement ;
+3. mettre en pause, reprendre, puis terminer ;
+4. chaque arrêt crée un enregistrement **indépendant** : fichier `.m4a` (AAC
+   44,1 kHz mono, 96 kbit/s) et entrée de métadonnées (titre, matière, date,
+   durée, nom et chemin du fichier) dans `recordings.json`.
+
+Tout reste sur le téléphone. La capture fonctionne **application ouverte** :
+l'enregistrement en arrière-plan demandera un development build puis un APK.
+Les détails (permissions, emplacement des fichiers, limites) sont dans
+[`docs/MIGRATION-EXPO.md`](docs/MIGRATION-EXPO.md#6-bis-enregistrement-audio).
 
 ## Structure
 
@@ -41,12 +60,15 @@ app/                     routes Expo Router (un fichier = un écran)
   (tabs)/                5 onglets + barre de navigation sur mesure
   recording.tsx          enregistrement, hors barre d'onglets
 src/
-  components/            cartes, boutons, barres, écrans types
+  components/            cartes, boutons, barres, onde sonore, écrans types
   features/              écrans et état par fonctionnalité
+    recording/           écran d'enregistrement + hook expo-audio
   domain/                modèles (cours, notions, exercices, progression)
   services/              contrats audio, analyse IA, stockage local
+    storage/             index local des enregistrements (JSON + fichiers)
   theme/                 couleurs, dégradés, typographie, rayons
-  lib/                   formatage des durées, couleurs
+  lib/                   formatage des durées, helpers d'enregistrement, couleurs
+tests/                   tests Node des helpers d'enregistrement
 legacy-android/          ancienne application Kotlin + Compose (archive)
 docs/MIGRATION-EXPO.md   guide de migration, Expo Go, APK, sécurité
 ```
@@ -60,6 +82,7 @@ docs/MIGRATION-EXPO.md   guide de migration, Expo Go, APK, sécurité
 | `npm run typecheck` | vérifie les types TypeScript |
 | `npm run doctor` | vérifie la cohérence des dépendances Expo |
 | `npm run export:android` | compile le bundle Android sans appareil |
+| `npm test` | tests Node des helpers d'enregistrement (`node --test`) |
 
 ## Sécurité
 

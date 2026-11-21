@@ -9,7 +9,9 @@
     "userInterfaceStyle": "dark",
     "backgroundColor": "#08080F",
     "primaryColor": "#8B5CF6",
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "android": {
       "package": "app.monprofdepoche",
       "versionCode": 1,
@@ -28,7 +30,16 @@
           "image": "./assets/images/icon.png",
           "imageWidth": 160
         }
-      ]
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Mon Prof de Poche utilise le microphone pour enregistrer vos cours.",
+          "recordAudioAndroid": true,
+          "enableBackgroundRecording": false
+        }
+      ],
+      "expo-asset"
     ]
   }
 }

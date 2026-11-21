@@ -3,17 +3,20 @@ import type { SubjectId } from "@/domain/subject";
 /**
  * Contrat du service d'enregistrement audio.
  *
- * OBJECTIF : l'écran d'enregistrement ne connaîtra que cette interface. On
- * pourra changer la technologie (expo-audio, module natif) sans le réécrire.
+ * IMPLÉMENTATION ACTUELLE : `src/features/recording/useRecordingSession.ts`,
+ * au-dessus d'`expo-audio` (inclus dans Expo Go, micro au premier plan). Le
+ * hook expose la même machine à états (démarrage, pause, reprise, arrêt),
+ * écrit le fichier `.m4a` dans les documents de l'app et délègue les
+ * métadonnées à `recordingRepository`.
  *
- * IMPLÉMENTATION PRÉVUE : `expo-audio` (inclus dans Expo Go pour une capture
- * simple, micro au premier plan). L'API réelle sera branchée à l'étape
- * « enregistrement » ; ce fichier ne prétend pas fonctionner aujourd'hui.
+ * Ce contrat reste la description technique à respecter si l'enregistrement
+ * passe un jour par un module natif ou un service de premier plan : l'écran ne
+ * devra pas être réécrit.
  *
  * LIMITE IMPORTANTE : la capture en arrière-plan / écran verrouillé exige
  * `enableBackgroundRecording` (service de premier plan Android). Cette option
  * n'est pas disponible dans Expo Go : elle demande un development build puis
- * un APK EAS. Voir docs/MIGRATION-EXPO.md.
+ * un APK EAS. Voir docs/MIGRATION-EXPO.md, section 6 bis.
  */
 
 export type RecordingStatus = "idle" | "starting" | "recording" | "paused" | "stopped";
@@ -21,6 +24,8 @@ export type RecordingStatus = "idle" | "starting" | "recording" | "paused" | "st
 export type RecordingSession = {
   id: string;
   subject: SubjectId;
+  /** Titre lisible enregistré dans les métadonnées. */
+  title: string;
   /** URI locale du fichier (cache ou documents de l'application). */
   fileUri: string;
   startedAt: number;

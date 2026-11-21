@@ -6,7 +6,12 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "allowImportingTsExtensions": true,
+    "types": [
+      "node",
+      "react"
+    ]
   },
   "include": [
     "**/*.ts",

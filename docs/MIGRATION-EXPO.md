@@ -86,6 +86,7 @@ Le terminal affiche un **QR code**.
 | `npm run typecheck` | `tsc --noEmit`, vérification TypeScript |
 | `npm run doctor` | `expo-doctor`, cohérence des dépendances avec le SDK |
 | `npm run export:android` | compile le bundle Android (test de compilation sans appareil) |
+| `npm test` | tests Node des helpers d'enregistrement (`node --test tests/`) |
 
 ---
 
@@ -105,12 +106,14 @@ src/
   theme/                 couleurs, dégradés, typographie, rayons, espacements
   components/            Card, GradientButton, StatTile, WeeklyBars, TabBar…
   features/<domaine>/    écran + état de la fonctionnalité
+    recording/           RecordingScreen + useRecordingSession (expo-audio)
   domain/                Subject, Course, Chapter, Notion, Exercise, Progress…
   services/
-    audio/               RecordingService (contrat)
+    audio/               RecordingService (contrat historique, hook réel ci-dessus)
     ai/                  AnalysisService, TutorService (contrats)
-    storage/             CourseRepository (contrat)
-  lib/                   formatDuration, formatRecordingTimer, withAlpha
+    storage/             recordingRepository (index local), CourseRepository (contrat)
+  lib/                   formatDuration, formatRecordingTimer, helpers d'enregistrement
+tests/                   tests Node des helpers (node --test)
 ```
 
 **Ajouter un écran** : créer un fichier dans `app/` (le routeur s'en occupe) et
@@ -131,12 +134,12 @@ modules natifs. Tout ce qui n'y est pas inclus demande un **development build**.
 
 | Besoin | Paquet prévu | Expo Go | Remarque |
 |---|---|---|---|
-| Enregistrer le micro (app au premier plan) | `expo-audio` | ✅ inclus | à brancher à la phase « enregistrement » |
-| Niveau sonore pour l'onde animée | `expo-audio` (metering) | ✅ | |
-| Lire un enregistrement | `expo-audio` | ✅ | |
+| Enregistrer le micro (app au premier plan) | `expo-audio` | ✅ inclus | **implémenté** dans l'écran Enregistrement |
+| Niveau sonore pour l'onde animée | `expo-audio` (metering) | ✅ | **implémenté** : l'onde suit le niveau réel du micro |
+| Lire un enregistrement | `expo-audio` | ✅ | prévu pour l'écoute des cours sauvegardés |
 | Enregistrement écran verrouillé / en arrière-plan | `expo-audio` + `enableBackgroundRecording` | ❌ | service de premier plan Android + notification persistante ; **development build** puis APK |
-| Stockage local (cours, notions, révisions) | `expo-sqlite` | ✅ inclus | |
-| Fichiers audio locaux | `expo-file-system` | ✅ inclus | |
+| Stockage local (cours, notions, révisions) | `expo-sqlite` | ✅ inclus | phase panier / cours |
+| Fichiers audio locaux | `expo-file-system` | ✅ inclus | **implémenté** : index `recordings.json` + fichiers `.m4a` |
 | Graphiques et ondes | Views natives / `react-native-svg` | ✅ | aucune dépendance native supplémentaire ici |
 | Notifications **locales** (rappels de révision) | `expo-notifications` | ✅ | |
 | Notifications **distantes** (push) | `expo-notifications` + Firebase | ❌ | retirées d'Expo Go ; development build + projet Firebase |
@@ -146,6 +149,53 @@ modules natifs. Tout ce qui n'y est pas inclus demande un **development build**.
 | Authentification Supabase | `@supabase/supabase-js` | ✅ | clé *anon* publique uniquement |
 | Biométrie / haptique | `expo-local-authentication`, `expo-haptics` | ✅ | |
 | Achats intégrés | `expo-iap` | ❌ | hors périmètre actuel |
+
+## 6 bis. Enregistrement audio
+
+L'écran Enregistrement est fonctionnel dans Expo Go. Il ne simule rien : sans
+microphone ou sans permission, il affiche une erreur et ne crée aucun fichier.
+
+### Parcours
+
+1. **Matière** : une pastille parmi les huit matières de `src/domain/subject.ts`.
+2. **Titre facultatif** : à défaut, le titre devient « Mathématiques · 21/11/2026 14:05 ».
+3. **Démarrer** : la permission Android `RECORD_AUDIO` est demandée ; en cas de
+   refus définitif, l'écran explique comment la réactiver dans les réglages.
+4. **Pause / Reprendre** : le chronomètre exclut le temps passé en pause.
+5. **Terminer** : le fichier est fermé, puis les métadonnées sont enregistrées.
+   Chaque arrêt produit un enregistrement **indépendant** ; rien n'est fusionné.
+
+Quitter l'écran pendant une capture (bouton Retour ou retour Android) demande
+confirmation et propose de terminer et sauvegarder avant de partir.
+
+### Fichiers et métadonnées
+
+| Élément | Emplacement |
+|---|---|
+| Audio | dossier **documents** de l'app, `Audio/cours-<matière>-AAAAMMJJ-HHMMSS.m4a` |
+| Métadonnées | `recordings.json` dans le même dossier documents |
+| Champs | `id`, `title`, `subject`, `fileName`, `fileUri`, `durationMs`, `createdAt` |
+
+L'index est lu et écrit par `src/services/storage/recordingRepository.ts`
+(`expo-file-system`), jamais par l'écran. Le dossier documents n'est pas vidé
+par Android, contrairement au cache.
+
+### Format
+
+AAC dans un conteneur MP4 (`.m4a`), 44,1 kHz, mono, 96 kbit/s, niveau micro
+activé (`isMeteringEnabled`). Pour changer la qualité ou le format, modifier
+`RECORDING_OPTIONS` dans `src/features/recording/useRecordingSession.ts`.
+
+### Limites assumées de cette version
+
+- **Premier plan uniquement** : l'application doit rester ouverte. L'option
+  `enableBackgroundRecording` est volontairement laissée à `false` dans
+  `app.json` ; l'arrière-plan et l'écran verrouillé demandent un development
+  build puis un APK.
+- **Pas de panier actif** : chaque enregistrement attend l'analyse. Le dépôt
+  expose déjà `listPendingAnalysis()` et `markAddedToBasket()` pour la suite.
+- **Pas de suppression ni de lecture audio dans l'interface** : le fichier est
+  conservé sur le téléphone et pourra être écouté à l'étape suivante.
 
 **À retenir** : Expo Go suffit pour l'accueil, la navigation, l'enregistrement
 simple au premier plan, le stockage local et les appels au backend. Dès que
@@ -209,8 +259,8 @@ l'APK Expo, ou changer `android.package` dans `app.json` pour cohabiter.
 | Phase | Contenu | Dépendance native |
 |---|---|---|
 | ✅ Migration | Expo + TypeScript, thème, navigation, accueil | aucune |
-| 4. Enregistrement | matière, chronomètre, onde, pause/reprise, sauvegarde locale | `expo-audio` (Expo Go suffisant) |
-| 5. Panier et cours | sélection de 5 fichiers max, stockage SQLite, liste des cours | `expo-sqlite` (Expo Go) |
+| ✅ 4. Enregistrement | matière, chronomètre, onde, pause/reprise, sauvegarde locale | `expo-audio` (Expo Go suffisant) |
+| 5. Panier et cours | sélection de 5 fichiers max (lecture de `recordings.json`), stockage SQLite, liste des cours | `expo-sqlite` (Expo Go) |
 | 6. Analyse IA | backend sécurisé, structuration en chapitres et notions | API + secrets serveur |
 | 7. Tuteur | conversation, indices progressifs, historique | API + secrets serveur |
 | 8. Exercices et révisions | génération d'exercices, répétition espacée | locale |

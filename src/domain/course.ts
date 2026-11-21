@@ -11,11 +11,17 @@ import type { SubjectId } from "./subject";
 /** Un enregistrement audio local, avant ou après analyse. */
 export type Recording = {
   id: string;
+  /** Titre lisible : saisi par l'utilisateur ou « Mathématiques · 21/11/2026 14:05 ». */
+  title: string;
   subject: SubjectId;
+  /** Nom du fichier seul (sans dossier), utile au partage et au panier. */
+  fileName: string;
   /** URI locale du fichier audio (expo-file-system). */
   fileUri: string;
   durationMs: number;
   createdAt: string;
+  /** Renseigné quand l'enregistrement a été ajouté au panier d'analyse. */
+  addedToBasketAt?: string;
   /** Renseigné quand l'enregistrement a été transformé en cours. */
   courseId?: string;
 };

@@ -1,5 +1,3 @@
-import { useRouter } from "expo-router";
-
 import { PlaceholderScreen } from "@/components/PlaceholderScreen";
 
 export function BasketScreen() {
@@ -58,24 +56,6 @@ export function ProgressScreen() {
         "Résultats par matière et lacunes détectées",
         "Révisions planifiées selon tes oublis",
       ]}
-    />
-  );
-}
-
-export function RecordingScreen() {
-  const router = useRouter();
-
-  return (
-    <PlaceholderScreen
-      icon="mic-outline"
-      title="Enregistrement"
-      subtitle="Le cœur de l’application : capturer le cours sans jamais perdre le fil."
-      features={[
-        "Choix de la matière avant de démarrer",
-        "Chronomètre et onde sonore en direct",
-        "Démarrer, mettre en pause, reprendre et terminer",
-      ]}
-      onBack={() => router.back()}
     />
   );
 }
