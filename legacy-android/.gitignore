@@ -1,0 +1,45 @@
+# ---------------------------------------------------------------------------
+# Mon Prof de Poche — fichiers à ne jamais versionner
+# ---------------------------------------------------------------------------
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+.kotlin/
+
+# Chemin du SDK Android sur la machine de chaque développeur (jamais partagé)
+local.properties
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+.navigation/
+.externalNativeBuild/
+.cxx/
+*.hprof
+
+# Sorties de compilation Android
+*.apk
+*.aab
+*.ap_
+*.dex
+output-metadata.json
+
+# Clés de signature et secrets (ne doivent JAMAIS entrer dans Git)
+*.jks
+*.keystore
+keystore.properties
+secrets.properties
+.env
+.env.*
+!.env.example
+
+# Fichiers de configuration de services (contiennent parfois des clés)
+google-services.json
+
+# Système / outils
+.DS_Store
+Thumbs.db
+*.log
