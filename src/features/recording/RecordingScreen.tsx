@@ -91,6 +91,8 @@ export function RecordingScreen() {
   }, [session, subject, title]);
 
   const handleStop = useCallback(async () => {
+    // Protège d'un double appui : la phase passe à « saving » dès le premier.
+    if (session.phase === "saving") return;
     const recording = await session.stop();
     if (!recording) {
       setNotice(session.error ?? "L'enregistrement n'a pas pu être sauvegardé.");
@@ -341,6 +343,13 @@ export function RecordingScreen() {
               {getSubject(lastSaved.subject).label} ·{" "}
               {formatRecordingDuration(lastSaved.durationMs)} ·{" "}
               {lastSaved.fileName}
+            </Text>
+            <Text
+              selectable
+              numberOfLines={3}
+              style={[typography.labelSmall, { color: colors.textSecondary, fontSize: 10 }]}
+            >
+              {lastSaved.fileUri}
             </Text>
             <Text style={[typography.labelSmall, { color: colors.blueSoft, marginTop: 4 }]}>
               En attente d’analyse · le panier le prendra en compte (5 fichiers maximum).

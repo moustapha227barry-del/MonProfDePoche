@@ -1,3 +1,4 @@
+import { File } from "expo-file-system";
 import {
   AudioQuality,
   IOSOutputFormat,
@@ -249,7 +250,10 @@ export function useRecordingSession() {
     let fileUri: string | null = null;
     try {
       await recorder.stop();
-      fileUri = recorder.uri ?? recorder.getStatus().url ?? null;
+      // Sur Android, `uri` vaut "" quand aucun fichier n'a été ouvert : ce
+      // n'est pas une URI valide, il faut la traiter comme absente.
+      const rawUri = recorder.uri || recorder.getStatus().url || null;
+      fileUri = rawUri && rawUri.length > 0 ? rawUri : null;
     } catch (cause) {
       console.warn("[enregistrement] arrêt impossible", cause);
       setError(`L'enregistrement n'a pas pu être arrêté proprement : ${errorMessage(cause)}`);
@@ -271,6 +275,19 @@ export function useRecordingSession() {
     if (!fileUri) {
       setError("Le fichier audio n'a pas pu être récupéré : rien n'a été sauvegardé.");
       return null;
+    }
+
+    // Vérification réelle sur le disque : si le `.m4a` n'existe pas (arrêt
+    // avorté, stockage plein), on ne crée pas de métadonnées fantômes.
+    try {
+      if (!new File(fileUri).exists) {
+        setError(
+          "Le fichier audio n'a pas été écrit sur le téléphone : rien n'a été sauvegardé.",
+        );
+        return null;
+      }
+    } catch (cause) {
+      console.warn("[enregistrement] vérification du fichier impossible", cause);
     }
 
     const recording: Recording = {

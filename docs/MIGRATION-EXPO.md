@@ -197,6 +197,9 @@ activé (`isMeteringEnabled`). Pour changer la qualité ou le format, modifier
 - **Pas de suppression ni de lecture audio dans l'interface** : le fichier est
   conservé sur le téléphone et pourra être écouté à l'étape suivante.
 
+**Vérifier sur un vrai téléphone** : suivre [`docs/TEST-EXPO-GO.md`](TEST-EXPO-GO.md)
+(installation, test d'un enregistrement, pause/reprise, fermeture/réouverture).
+
 **À retenir** : Expo Go suffit pour l'accueil, la navigation, l'enregistrement
 simple au premier plan, le stockage local et les appels au backend. Dès que
 l'enregistrement doit continuer **écran éteint ou application en arrière-plan**,

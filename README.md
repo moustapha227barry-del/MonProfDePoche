@@ -21,6 +21,10 @@ Scannez le QR code affiché dans le terminal avec Expo Go. Les instructions
 détaillées (VS Code, réseau, dépannage) sont dans
 [`docs/MIGRATION-EXPO.md`](docs/MIGRATION-EXPO.md).
 
+**Tester l'enregistrement sur ton téléphone** : guide pas à pas dans
+[`docs/TEST-EXPO-GO.md`](docs/TEST-EXPO-GO.md) (10 minutes, avec les résultats
+attendus pour chaque étape).
+
 ## État actuel
 
 | Élément | État |
