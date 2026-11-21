@@ -1,11 +1,11 @@
-import type { SubjectId } from "./subject";
+import type { SubjectId } from "@/lib/subjects";
 
 /**
- * Modèles du domaine, volontairement indépendants de toute bibliothèque.
+ * Modèles du domaine, indépendants de toute bibliothèque.
  *
  * Ils décrivent ce que l'application manipule : un enregistrement, le cours
- * structuré qui en découle, ses exercices, et la progression associée.
- * Les services (stockage local, analyse IA) ne font que remplir ces types.
+ * structuré qui en découle, ses chapitres, sections et notions, puis les
+ * résultats d'exercices qui alimentent la progression.
  */
 
 /** Un enregistrement audio local, avant ou après analyse. */
@@ -29,22 +29,11 @@ export type Recording = {
 /** Statut d'analyse d'un enregistrement. */
 export type AnalysisStatus = "pending" | "running" | "done" | "failed";
 
-/** Un cours structuré, produit à partir d'un ou plusieurs enregistrements. */
-export type Course = {
+/** Une section d'un chapitre : un bloc de texte continu du cours. */
+export type Section = {
   id: string;
   title: string;
-  subject: SubjectId;
-  chapters: Chapter[];
-  createdAt: string;
-  updatedAt: string;
-  status: AnalysisStatus;
-};
-
-export type Chapter = {
-  id: string;
-  title: string;
-  summary: string;
-  notions: Notion[];
+  content: string;
 };
 
 /** Une notion clé : définition, formule ou méthode, avec un niveau d'acquisition. */
@@ -56,6 +45,34 @@ export type Notion = {
   method?: string;
   example?: string;
   masteryPercent: number;
+  /** Vrai quand l'IA n'a pas pu établir la notion avec certitude. */
+  uncertain?: boolean;
+};
+
+export type Chapter = {
+  id: string;
+  title: string;
+  summary: string;
+  /** Développement du chapitre, section par section. */
+  sections: Section[];
+  notions: Notion[];
+  /** Renseigné quand l'élève a marqué le chapitre comme étudié. */
+  studiedAt?: string;
+};
+
+/** Un cours structuré, produit à partir d'un ou plusieurs enregistrements. */
+export type Course = {
+  id: string;
+  title: string;
+  subject: SubjectId;
+  chapters: Chapter[];
+  createdAt: string;
+  updatedAt: string;
+  status: AnalysisStatus;
+  /** Enregistrements d'origine : le lien avec l'audio est conservé. */
+  recordingIds: string[];
+  /** Passages que l'IA n'a pas pu établir : signalés, jamais inventés. */
+  uncertainties: string[];
 };
 
 /** Exercice généré par le tuteur pour vérifier une notion. */
@@ -67,6 +84,15 @@ export type Exercise = {
   expectedAnswer: string;
 };
 
+/** Résultat d'un exercice, enregistré localement pour la progression. */
+export type ExerciseResult = {
+  id: string;
+  courseId: string;
+  notionId: string;
+  correct: boolean;
+  answeredAt: string;
+};
+
 /** Instantané de progression, affiché par l'onglet « Progrès ». */
 export type ProgressSnapshot = {
   totalMinutes: number;
@@ -75,6 +101,14 @@ export type ProgressSnapshot = {
   streakDays: number;
   masteryBySubject: { subject: SubjectId; masteryPercent: number }[];
   revisionsDue: number;
+  totalCourses: number;
+  totalChapters: number;
+  studiedChapters: number;
+  totalNotions: number;
+  notionsMastered: number;
+  notionsToReview: number;
+  exerciseResults: number;
+  exerciseCorrect: number;
 };
 
 /** Révision programmée (répétition espacée). */

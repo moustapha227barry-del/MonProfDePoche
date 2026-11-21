@@ -1,41 +1,36 @@
-import type { Course, Recording } from "@/domain/course";
+import type { Course } from "@/domain/course";
+import type { PreparedAnalysisBatch } from "@/lib/basket";
 
 /**
- * Contrat de l'analyse IA : transformer jusqu'à 5 enregistrements en un cours
- * structuré (chapitres, notions, définitions, formules, méthodes).
+ * Contrat de l'analyse IA : transformer un lot de 1 à 5 enregistrements en un
+ * cours structuré (chapitres, sections, notions, définitions, formules,
+ * méthodes, exemples).
  *
  * SÉCURITÉ — RÈGLE ABSOLUE :
  * aucune clé d'API ne doit être écrite dans le code, dans `app.json` ou dans
- * Git. L'application appellera un backend sécurisé (Supabase Edge Function ou
- * équivalent) qui détient la clé côté serveur. Le client ne connaît que
- * l'URL publique du backend (`EXPO_PUBLIC_API_URL`).
+ * Git. L'application appelle un backend sécurisé (dossier `backend/`) qui
+ * détient la clé côté serveur. Le client ne connaît que l'URL publique
+ * (`EXPO_PUBLIC_API_URL`).
  *
- * Tant que ce backend n'existe pas, l'implémentation doit échouer proprement
- * avec un message explicite : aucune donnée n'est envoyée nulle part.
+ * IMPLÉMENTATION : `src/services/ai/httpAnalysisService.ts`, branchée sur ce
+ * contrat. Sans backend configuré, elle échoue avec
+ * `AiServiceError("missing-backend")` : aucun cours n'est créé.
  */
 
 export type AnalysisRequest = {
-  recordings: Recording[];
-  /** Langue du cours, pour que le résumé reste dans la bonne langue. */
+  batch: PreparedAnalysisBatch;
+  /** Langue du cours, pour que la transcription reste dans la bonne langue. */
   language: "fr";
 };
 
 export type AnalysisResult = {
   course: Course;
-  /** Notions dont la maîtrise doit être retravaillée. */
-  weakNotions: string[];
+  /** Transcription complète, conservée localement pour la traçabilité. */
+  transcript: string;
+  /** Passages incertains signalés par le modèle, jamais inventés. */
+  uncertainties: string[];
 };
 
 export interface AnalysisService {
   analyse(request: AnalysisRequest): Promise<AnalysisResult>;
-}
-
-/** Erreur levée quand le backend n'est pas encore configuré. */
-export class AnalysisBackendMissingError extends Error {
-  constructor() {
-    super(
-      "Analyse indisponible : le backend sécurisé n'est pas encore configuré (voir docs/MIGRATION-EXPO.md).",
-    );
-    this.name = "AnalysisBackendMissingError";
-  }
 }

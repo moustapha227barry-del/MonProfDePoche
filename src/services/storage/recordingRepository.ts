@@ -79,6 +79,18 @@ export const recordingRepository = {
     await writeIndex(sortByNewest([recording, ...others]));
   },
 
+  /** Renomme un enregistrement sans toucher au fichier audio. */
+  async rename(id: string, title: string): Promise<Recording | null> {
+    const clean = title.trim().slice(0, 120);
+    if (!clean) return null;
+    const recordings = await readIndex();
+    const target = recordings.find((item) => item.id === id);
+    if (!target) return null;
+    const updated: Recording = { ...target, title: clean };
+    await writeIndex(recordings.map((item) => (item.id === id ? updated : item)));
+    return updated;
+  },
+
   /** Supprime les métadonnées et le fichier audio associé. */
   async remove(id: string): Promise<void> {
     const recordings = await readIndex();
