@@ -107,12 +107,14 @@ src/
   components/            Card, GradientButton, StatTile, WeeklyBars, TabBar…
   features/<domaine>/    écran + état de la fonctionnalité
     recording/           RecordingScreen + useRecordingSession (expo-audio)
+    basket/              BasketScreen (panier d'analyse)
   domain/                Subject, Course, Chapter, Notion, Exercise, Progress…
   services/
     audio/               RecordingService (contrat historique, hook réel ci-dessus)
     ai/                  AnalysisService, TutorService (contrats)
-    storage/             recordingRepository (index local), CourseRepository (contrat)
-  lib/                   formatDuration, formatRecordingTimer, helpers d'enregistrement
+    storage/             recordingRepository (index local), analysisBatchRepository,
+                         CourseRepository (contrat)
+  lib/                   formatDuration, helpers d'enregistrement et de panier
 tests/                   tests Node des helpers (node --test)
 ```
 
@@ -138,7 +140,7 @@ modules natifs. Tout ce qui n'y est pas inclus demande un **development build**.
 | Niveau sonore pour l'onde animée | `expo-audio` (metering) | ✅ | **implémenté** : l'onde suit le niveau réel du micro |
 | Lire un enregistrement | `expo-audio` | ✅ | prévu pour l'écoute des cours sauvegardés |
 | Enregistrement écran verrouillé / en arrière-plan | `expo-audio` + `enableBackgroundRecording` | ❌ | service de premier plan Android + notification persistante ; **development build** puis APK |
-| Stockage local (cours, notions, révisions) | `expo-sqlite` | ✅ inclus | phase panier / cours |
+| Stockage local (cours, notions, révisions) | `expo-sqlite` | ✅ inclus | phase cours ; le panier utilise déjà des fichiers JSON |
 | Fichiers audio locaux | `expo-file-system` | ✅ inclus | **implémenté** : index `recordings.json` + fichiers `.m4a` |
 | Graphiques et ondes | Views natives / `react-native-svg` | ✅ | aucune dépendance native supplémentaire ici |
 | Notifications **locales** (rappels de révision) | `expo-notifications` | ✅ | |
@@ -192,13 +194,66 @@ activé (`isMeteringEnabled`). Pour changer la qualité ou le format, modifier
   `enableBackgroundRecording` est volontairement laissée à `false` dans
   `app.json` ; l'arrière-plan et l'écran verrouillé demandent un development
   build puis un APK.
-- **Pas de panier actif** : chaque enregistrement attend l'analyse. Le dépôt
-  expose déjà `listPendingAnalysis()` et `markAddedToBasket()` pour la suite.
+- **Panier prêt, analyse à venir** : la sélection de 5 fichiers est
+  fonctionnelle (voir §6 ter), mais aucune IA n'est encore appelée.
 - **Pas de suppression ni de lecture audio dans l'interface** : le fichier est
   conservé sur le téléphone et pourra être écouté à l'étape suivante.
 
 **Vérifier sur un vrai téléphone** : suivre [`docs/TEST-EXPO-GO.md`](TEST-EXPO-GO.md)
 (installation, test d'un enregistrement, pause/reprise, fermeture/réouverture).
+
+---
+
+## 6 ter. Panier d'analyse
+
+L'onglet **Panier** est fonctionnel dans Expo Go et branché sur les **vrais**
+enregistrements du téléphone. Aucune donnée de démonstration n'y est utilisée.
+
+### Ce que fait le panier
+
+- il liste **tous** les enregistrements sauvegardés (titre, matière, date, durée) ;
+- il permet de sélectionner / désélectionner un cours, **5 fichiers maximum** ;
+- il affiche en permanence le compteur `3/5`, une barre de progression et la
+  durée cumulée de la sélection ;
+- il explique clairement pourquoi un sixième fichier est refusé ;
+- « **Retirer** » enlève le cours du panier **sans supprimer son `.m4a`** ;
+- « **Préparer l'analyse** » valide le lot et l'enregistre pour la phase IA.
+
+### Persistance
+
+| Donnée | Emplacement | Écrit par |
+|---|---|---|
+| Appartenance au panier | champ `addedToBasketAt` de `recordings.json` | `recordingRepository.addToBasket` / `removeFromBasket` |
+| Lot préparé | `prepared-analysis.json` (dossier documents) | `analysisBatchRepository` |
+
+Fermer l'application ne vide donc pas le panier : il est relu à chaque arrivée
+sur l'onglet (`useFocusEffect`). Un lot préparé est supprimé dès que la
+sélection change, pour ne jamais décrire une autre sélection que celle affichée.
+
+### Validation du lot
+
+`prepareAnalysisBatch()` (`src/lib/basket.ts`, pur et testé) refuse :
+
+1. un panier vide ;
+2. plus de 5 fichiers ;
+3. un fichier dont l'audio a disparu du téléphone (identifié par
+   `recordingRepository.missingIds()`, affiché « Fichier introuvable »).
+
+Le lot contient, pour chaque fichier : identifiant, titre, nom, URI locale,
+matiİre, durée et type MIME `audio/mp4`, plus la durée totale et un identifiant
+`lot-AAAAMMJJ-HHMMSS`. **Aucun son n'est copié, déplacé ni envoyé.**
+
+### Ce que le panier ne fait pas (volontairement)
+
+- il **n'appelle aucune IA** (ni Gemini, ni OpenRouter) : le bouton prépare et
+  valide le lot, il ne prétend pas analyser ;
+- il ne supprime aucun fichier audio et ne touche pas aux autres onglets ;
+- il ne déplace pas les `.m4a` : le lot les référence à leur emplacement
+  d'origine, dans le dossier documents de l'application.
+
+Le futur `AnalysisService` consommera directement `PreparedAnalysisBatch.files`.
+
+**Vérifier sur un vrai téléphone** : [`docs/TEST-PANIER.md`](TEST-PANIER.md).
 
 **À retenir** : Expo Go suffit pour l'accueil, la navigation, l'enregistrement
 simple au premier plan, le stockage local et les appels au backend. Dès que
@@ -263,8 +318,9 @@ l'APK Expo, ou changer `android.package` dans `app.json` pour cohabiter.
 |---|---|---|
 | ✅ Migration | Expo + TypeScript, thème, navigation, accueil | aucune |
 | ✅ 4. Enregistrement | matière, chronomètre, onde, pause/reprise, sauvegarde locale | `expo-audio` (Expo Go suffisant) |
-| 5. Panier et cours | sélection de 5 fichiers max (lecture de `recordings.json`), stockage SQLite, liste des cours | `expo-sqlite` (Expo Go) |
-| 6. Analyse IA | backend sécurisé, structuration en chapitres et notions | API + secrets serveur |
+| ✅ 5. Panier | sélection réelle de 5 fichiers max, lot préparé et persisté | `expo-file-system` (Expo Go suffisant) |
+| 5 bis. Cours | stockage SQLite, liste des cours | `expo-sqlite` (Expo Go) |
+| 6. Analyse IA | envoi du lot préparé à un backend sécurisé, structuration en chapitres et notions | API + secrets serveur |
 | 7. Tuteur | conversation, indices progressifs, historique | API + secrets serveur |
 | 8. Exercices et révisions | génération d'exercices, répétition espacée | locale |
 | 9. Progression | graphiques, lacunes, objectifs | locale |

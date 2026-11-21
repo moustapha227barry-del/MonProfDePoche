@@ -1,20 +1,5 @@
 import { PlaceholderScreen } from "@/components/PlaceholderScreen";
 
-export function BasketScreen() {
-  return (
-    <PlaceholderScreen
-      icon="layers-outline"
-      title="Mon panier"
-      subtitle="Les enregistrements de la journée, réunis avant d’être transformés en cours structuré."
-      features={[
-        "Enregistrements du jour regroupés automatiquement",
-        "Sélection multiple, 5 fichiers maximum par analyse",
-        "Lancement de l’analyse dès la sélection validée",
-      ]}
-    />
-  );
-}
-
 export function CoursesScreen() {
   return (
     <PlaceholderScreen

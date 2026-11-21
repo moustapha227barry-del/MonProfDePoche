@@ -23,7 +23,8 @@ détaillées (VS Code, réseau, dépannage) sont dans
 
 **Tester l'enregistrement sur ton téléphone** : guide pas à pas dans
 [`docs/TEST-EXPO-GO.md`](docs/TEST-EXPO-GO.md) (10 minutes, avec les résultats
-attendus pour chaque étape).
+attendus pour chaque étape). **Tester le panier** :
+[`docs/TEST-PANIER.md`](docs/TEST-PANIER.md).
 
 ## État actuel
 
@@ -35,8 +36,9 @@ attendus pour chaque étape).
 | Écran d'accueil complet | ✅ avec données de démonstration |
 | **Enregistrement audio** : matière, titre, chronomètre, onde, pause/reprise | ✅ fonctionnel dans Expo Go |
 | **Sauvegarde locale** : un fichier `.m4a` AAC + métadonnées par enregistrement | ✅ dans les documents de l'app |
-| Panier, Cours, Tuteur, Progression | 🚧 écrans « en préparation » |
-| Analyse IA et panier d'analyse | ⏳ prochaine phase |
+| **Panier d'analyse** : sélection réelle, 5 fichiers max, lot préparé et persistant | ✅ fonctionnel dans Expo Go |
+| Cours, Tuteur, Progression | 🚧 écrans « en préparation » |
+| Analyse IA (Gemini / OpenRouter) | ⏳ le lot est préparé et validé, aucun appel réseau |
 | APK autonome (hors Play Store) | ⏳ configuration prête (`eas.json`) |
 
 ### Enregistrement audio
@@ -56,6 +58,24 @@ l'enregistrement en arrière-plan demandera un development build puis un APK.
 Les détails (permissions, emplacement des fichiers, limites) sont dans
 [`docs/MIGRATION-EXPO.md`](docs/MIGRATION-EXPO.md#6-bis-enregistrement-audio).
 
+### Panier d'analyse
+
+L'onglet **Panier** liste les vrais enregistrements du téléphone et permet d'en
+sélectionner **5 au maximum** :
+
+1. toucher un enregistrement l'ajoute au panier, le retoucher l'en retire ;
+2. le compteur `3/5` et la durée cumulée se mettent à jour immédiatement ;
+3. un sixième fichier est refusé avec un message explicite ;
+4. « Retirer » ne supprime **jamais** le fichier `.m4a`, seulement son
+   appartenance au panier ;
+5. « Préparer l'analyse » vérifie que chaque fichier existe encore, puis
+   enregistre le lot dans `prepared-analysis.json`.
+
+La sélection est persistée dans `recordings.json` : elle survit à la fermeture
+de l'application. Aucune IA n'est appelée à cette étape — le lot est prêt pour
+la phase suivante. Détails :
+[`docs/MIGRATION-EXPO.md`](docs/MIGRATION-EXPO.md#6-ter-panier-danalyse).
+
 ## Structure
 
 ```
@@ -67,14 +87,17 @@ src/
   components/            cartes, boutons, barres, onde sonore, écrans types
   features/              écrans et état par fonctionnalité
     recording/           écran d'enregistrement + hook expo-audio
+    basket/              écran du panier d'analyse
   domain/                modèles (cours, notions, exercices, progression)
   services/              contrats audio, analyse IA, stockage local
-    storage/             index local des enregistrements (JSON + fichiers)
+    storage/             index local des enregistrements, lot d'analyse préparé
   theme/                 couleurs, dégradés, typographie, rayons
-  lib/                   formatage des durées, helpers d'enregistrement, couleurs
-tests/                   tests Node des helpers d'enregistrement
+  lib/                   durées, helpers d'enregistrement, helpers du panier, couleurs
+tests/                   tests Node des helpers (enregistrement et panier)
 legacy-android/          ancienne application Kotlin + Compose (archive)
 docs/MIGRATION-EXPO.md   guide de migration, Expo Go, APK, sécurité
+docs/TEST-EXPO-GO.md     test pas à pas de l'enregistrement sur Android
+docs/TEST-PANIER.md      test pas à pas du panier sur Android
 ```
 
 ## Scripts
@@ -86,7 +109,7 @@ docs/MIGRATION-EXPO.md   guide de migration, Expo Go, APK, sécurité
 | `npm run typecheck` | vérifie les types TypeScript |
 | `npm run doctor` | vérifie la cohérence des dépendances Expo |
 | `npm run export:android` | compile le bundle Android sans appareil |
-| `npm test` | tests Node des helpers d'enregistrement (`node --test`) |
+| `npm test` | tests Node des helpers d'enregistrement et du panier (`node --test`) |
 
 ## Sécurité
 
